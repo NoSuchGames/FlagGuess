@@ -149,6 +149,11 @@
 
       <div class="feedback" id="feedback"></div>
 
+      <div class="wrong-guess-panel" id="wrongGuessPanel">
+        <div class="wrong-guess-label">Wrong guesses</div>
+        <div class="wrong-guess-list" id="wrongGuesses"></div>
+      </div>
+
       <button class="btn-next" id="btnNext" onclick="nextTurn()">
         Next turn
         <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
@@ -178,6 +183,16 @@
       <div class="winner-score" id="winnerScore"></div>
     </div>
     <div class="modal-leaderboard" id="modalLeaderboard"></div>
+    <div class="modal-links-block">
+      <div class="modal-links-label">GitHub</div>
+      <div class="modal-links-sub">Find the project, star it, or help improve it.</div>
+      <div class="modal-links">
+        <a class="footer-link modal-link modal-link-primary" href="https://github.com/NoSuchGames/FlagGuess" target="_blank" rel="noreferrer">Find on GitHub</a>
+        <a class="footer-link modal-link modal-link-star" href="https://github.com/NoSuchGames/FlagGuess" target="_blank" rel="noreferrer">Star on GitHub</a>
+        <a class="footer-link modal-link" href="https://github.com/NoSuchGames/FlagGuess/issues" target="_blank" rel="noreferrer">Report an issue</a>
+        <a class="footer-link modal-link" href="https://github.com/NoSuchGames/FlagGuess/pulls" target="_blank" rel="noreferrer">Open pull requests</a>
+      </div>
+    </div>
     <button class="btn-play-again" onclick="playAgain()">Play Again</button>
   </div>
 </div>

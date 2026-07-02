@@ -10,6 +10,8 @@ const COLS = 6, ROWS = 4, TOTAL = COLS * ROWS;
 const DIFF_PTS = { easy: 10, medium: 20, hard: 30, expert: 50 };
 // Points deducted per tile revealed
 const DIFF_COST = { easy: 1, medium: 2, hard: 3, expert: 5 };
+// Flat penalty for each wrong guess
+const WRONG_GUESS_PENALTY = 1;
 const DIFF_POOL = {
   easy: ["easy", "medium", "hard", "expert"],
   medium: ["medium", "hard", "expert"],
@@ -22,6 +24,8 @@ let teams = [], currentTeamIdx = 0, round = 1;
 let current = null, revealed = [], diffLevel = "easy";
 let shuffleOrder = [], shuffleIdx = 0;
 let done = false, diffLocked = false;
+let wrongGuesses = [];
+let defaultDiffLevel = "easy";
 let usedFlags = [];
 
 // ── SETUP ─────────────────────────────────────────────────────────────────────
@@ -48,16 +52,18 @@ function startGame() {
     const inp = document.getElementById("teamName" + i);
     teams.push({ name: inp.value.trim() || "Team " + (i + 1), colour: TEAM_COLOURS[i], score: 0 });
   }
-  currentTeamIdx = 0; round = 1; usedFlags = [];
+  currentTeamIdx = 0; round = 1; usedFlags = []; wrongGuesses = []; defaultDiffLevel = "easy"; diffLevel = defaultDiffLevel;
   document.getElementById("setupScreen").style.display = "none";
   document.getElementById("gameScreen").style.display = "flex";
   renderScoreboard();
+  renderWrongGuesses();
   startRound();
 }
 
 // ── ROUND ─────────────────────────────────────────────────────────────────────
 function startRound() {
-  done = false; diffLocked = false; revealed = [];
+  done = false; diffLocked = false; revealed = []; wrongGuesses = [];
+  diffLevel = defaultDiffLevel;
 
   // pick flag from the current difficulty pool, then avoid repeats until the pool is exhausted
   const pool = DIFF_POOL[diffLevel] || DIFF_POOL.easy;
@@ -96,6 +102,7 @@ function startRound() {
   document.getElementById("btnGuess").disabled = false;
   document.getElementById("feedback").textContent = "";
   document.getElementById("feedback").className = "feedback";
+  renderWrongGuesses();
   document.getElementById("autocomplete").style.display = "none";
   document.getElementById("btnNext").className = "btn-next";
   resetPrimaryRevealButton();
@@ -111,7 +118,7 @@ function startRound() {
 
   shuffleOrder = shuffledArr(); shuffleIdx = 0;
 
-  setDiff(diffLevel); // keep the current difficulty selection active
+  updateDifficultySelection(diffLevel);
   updateBanner();
   updateProgress();
   updatePtsMeter();
@@ -125,28 +132,31 @@ function shuffledArr() {
 
 // ── DIFFICULTY ────────────────────────────────────────────────────────────────
 function setDiff(d) {
-  if (diffLocked) return;
-  diffLevel = d;
+  defaultDiffLevel = d;
+  updateDifficultySelection(d);
+
+  if (!hasRoundStarted()) {
+    startRound();
+  }
+}
+
+function updateDifficultySelection(d) {
   ["easy", "medium", "hard", "expert"].forEach(x => {
     document.getElementById("d" + x[0].toUpperCase() + x.slice(1)).className =
       "diff-btn" + (d === x ? " active-" + x : "");
   });
   document.querySelectorAll(".pts-chip").forEach(c => {
-    // match chip by its onclick attribute
     const onclick = c.getAttribute("onclick") || "";
     c.classList.toggle("selected", onclick.includes("'" + d + "'"));
   });
-  updateDiffBadge();
-  updatePtsMeter();
+}
+
+function hasRoundStarted() {
+  return revealed.length > 0 || wrongGuesses.length > 0;
 }
 
 function lockDiff() {
-  if (diffLocked) return;
   diffLocked = true;
-  ["easy", "medium", "hard", "expert"].forEach(x => {
-    document.getElementById("d" + x[0].toUpperCase() + x.slice(1)).disabled = true;
-  });
-  document.querySelectorAll(".pts-chip").forEach(c => c.classList.add("locked"));
 }
 
 // ── REVEAL ────────────────────────────────────────────────────────────────────
@@ -267,28 +277,21 @@ function submitGuess() {
     document.getElementById("btnNext").className = "btn-next visible";
     setPrimaryRevealButton("next");
   } else {
-    const penalty = DIFF_PTS[diffLevel];
-    teams[currentTeamIdx].score -= penalty;
-    done = true;
-    _revealAllTiles();
-    setMeterFinal(-penalty);
-    const ao = document.getElementById("answerOverlay");
-    ao.textContent = current.name; ao.className = "answer-overlay visible";
-    fb.textContent = `Wrong! The answer was ${current.name} — penalty of −${penalty} points.`;
+    teams[currentTeamIdx].score -= WRONG_GUESS_PENALTY;
+    wrongGuesses.push(val);
+    fb.textContent = `Wrong country guess! −${WRONG_GUESS_PENALTY} point. Try again.`;
     fb.className = "feedback wrong show";
-    document.getElementById("btnAns").disabled = true;
-    document.getElementById("guessInput").disabled = true;
-    document.getElementById("btnGuess").disabled = true;
-    document.getElementById("btnNext").className = "btn-next visible";
-    setPrimaryRevealButton("next");
+    renderWrongGuesses();
+    document.getElementById("guessInput").value = "";
+    document.getElementById("guessInput").focus();
   }
-  document.getElementById("guessInput").value = "";
   renderScoreboard();
 }
 
 function nextTurn() {
   currentTeamIdx = (currentTeamIdx + 1) % teams.length;
   if (currentTeamIdx === 0) round++;
+  defaultDiffLevel = diffLevel;
   startRound();
 }
 
@@ -297,7 +300,7 @@ function updateBanner() {
   const t = teams[currentTeamIdx];
   document.getElementById("bannerDot").style.background = t.colour;
   document.getElementById("bannerName").textContent = t.name + "'s turn";
-  document.getElementById("bannerSub").textContent = "Choose difficulty, then reveal tiles";
+  document.getElementById("bannerSub").textContent = "Choose difficulty, then keep guessing or reveal tiles";
 }
 
 function updateProgress() {
@@ -349,6 +352,33 @@ function renderScoreboard() {
     `;
     sb.appendChild(div);
   });
+}
+
+function renderWrongGuesses() {
+  const panel = document.getElementById("wrongGuessPanel");
+  const list = document.getElementById("wrongGuesses");
+  if (!panel || !list) return;
+
+  list.innerHTML = "";
+  if (!wrongGuesses.length) {
+    panel.classList.remove("visible");
+    return;
+  }
+
+  wrongGuesses.forEach((guess) => {
+    const item = document.createElement("div");
+    item.className = "wrong-guess-item";
+    const text = document.createElement("span");
+    text.className = "wrong-guess-text";
+    text.textContent = guess;
+    const mark = document.createElement("span");
+    mark.className = "wrong-guess-x";
+    mark.textContent = "x";
+    item.appendChild(text);
+    item.appendChild(mark);
+    list.appendChild(item);
+  });
+  panel.classList.add("visible");
 }
 
 // ── FINISH ────────────────────────────────────────────────────────────────────

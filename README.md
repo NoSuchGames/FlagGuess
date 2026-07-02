@@ -11,10 +11,12 @@ FlagGuess is a browser-based flag quiz for 1-8 teams. Each round, a team picks a
 - The game uses a 6x4 tile grid over each flag.
 - Teams take turns in order.
 - A round starts by choosing a difficulty: Easy, Medium, Hard, or Expert.
+- The selected difficulty persists into the next round.
 - Revealing tiles reduces the round's potential score.
-- Each round allows one guess.
 - A correct guess awards the remaining points for that difficulty.
-- A wrong guess or giving up applies the full difficulty penalty to the current team.
+- Teams can keep guessing until they are correct or give up.
+- Each wrong guess deducts 1 point from the current team.
+- Giving up applies the full difficulty penalty to the current team.
 
 ## Scoring
 
@@ -22,6 +24,7 @@ FlagGuess is a browser-based flag quiz for 1-8 teams. Each round, a team picks a
 - Medium: 20 base points, minus 2 points per revealed tile
 - Hard: 30 base points, minus 3 points per revealed tile
 - Expert: 50 base points, minus 5 points per revealed tile
+- Wrong guess penalty: 1 point per miss
 
 ## Gameplay
 
@@ -31,7 +34,8 @@ FlagGuess is a browser-based flag quiz for 1-8 teams. Each round, a team picks a
 4. Choose a difficulty.
 5. Reveal one tile at a time or reveal all.
 6. Type a country name and submit your guess.
-7. Move to the next turn when the round ends.
+7. Keep guessing if you are wrong, or set the difficulty for the next round if the round has already started.
+8. Move to the next turn when the round ends.
 
 ## Project structure
 
@@ -50,6 +54,7 @@ This is a static front-end project. Open [index.html](index.html) in a browser, 
 - Flag difficulty is assigned from the country mapping in [src/mapping.js](src/mapping.js).
 - The autocomplete list searches country names as you type.
 - The current game state is kept entirely in the browser.
+- Wrong guesses are listed at the bottom of the round panel.
 
 ### Special Thanks
 
