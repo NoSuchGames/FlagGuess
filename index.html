@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Flag Quiz</title>
+<script src="src/mapping.js" defer></script>
+<script src="src/main.js" defer></script>
+<link rel="stylesheet" type="text/css" href="src/main.css">
+</head>
+<body>
+
+<h1 class="page-title">Flag Quiz</h1>
+<p class="page-sub">Reveal tiles to uncover the flag — guess with as few hints as possible</p>
+
+<div id="setupScreen">
+  <div class="setup-card">
+    <div class="setup-title">Game Setup</div>
+
+    <div class="setup-row">
+      <div class="setup-label">Number of teams</div>
+      <select id="teamCount" onchange="updateTeamNameInputs()">
+        <option value="1">1 team (solo)</option>
+        <option value="2" selected>2 teams</option>
+        <option value="3">3 teams</option>
+        <option value="4">4 teams</option>
+        <option value="5">5 teams</option>
+        <option value="6">6 teams</option>
+        <option value="7">7 teams</option>
+        <option value="8">8 teams</option>
+      </select>
+    </div>
+
+    <div class="setup-row">
+      <div class="setup-label">Team names</div>
+      <div class="team-names-grid" id="teamNamesGrid"></div>
+    </div>
+
+    <div class="setup-row">
+      <div class="setup-label">Points system</div>
+      <div class="pts-info-grid">
+        <div class="pts-info-cell cell-easy">
+          <div class="pts-info-name">Easy — 10 pts</div>
+          <div class="pts-info-detail">−1 pt per tile revealed</div>
+        </div>
+        <div class="pts-info-cell cell-medium">
+          <div class="pts-info-name">Medium — 20 pts</div>
+          <div class="pts-info-detail">−2 pts per tile revealed</div>
+        </div>
+        <div class="pts-info-cell cell-hard">
+          <div class="pts-info-name">Hard — 30 pts</div>
+          <div class="pts-info-detail">−3 pts per tile revealed</div>
+        </div>
+        <div class="pts-info-cell cell-expert">
+          <div class="pts-info-name">Expert — 50 pts</div>
+          <div class="pts-info-detail">−5 pts per tile revealed</div>
+        </div>
+      </div>
+      <div class="setup-note">Wrong guess or giving up loses the full difficulty value as a penalty. One guess per round.</div>
+    </div>
+
+    <button class="btn-start" onclick="startGame()">Start Game</button>
+  </div>
+</div>
+
+<!-- ══ GAME SCREEN ══ -->
+<div id="gameScreen">
+
+  <div class="game-card">
+
+    <div class="card-header">
+      <div class="round-info">Round <b id="roundVal">1</b></div>
+      <div class="diff-badge badge-easy" id="diffBadge">Easy</div>
+    </div>
+
+    <div class="team-banner">
+      <div class="team-banner-dot" id="bannerDot"></div>
+      <div class="team-banner-name" id="bannerName">Team 1</div>
+      <div class="team-banner-sub" id="bannerSub">Choose difficulty, then reveal tiles</div>
+    </div>
+
+    <div class="points-bar">
+      <span class="pts-label">Available:</span>
+      <div class="pts-chips" id="ptsChips">
+        <span class="pts-chip chip-easy selected"   onclick="setDiff('easy')">Easy: 10 (−1/tile)</span>
+        <span class="pts-chip chip-medium"          onclick="setDiff('medium')">Medium: 20 (−2/tile)</span>
+        <span class="pts-chip chip-hard"            onclick="setDiff('hard')">Hard: 30 (−3/tile)</span>
+        <span class="pts-chip chip-expert"          onclick="setDiff('expert')">Expert: 50 (−5/tile)</span>
+      </div>
+    </div>
+
+    <div class="diff-select-wrap">
+      <span class="diff-label-sm">Difficulty</span>
+      <div class="diff-btns">
+        <button class="diff-btn active-easy" id="dEasy"   onclick="setDiff('easy')">Easy</button>
+        <button class="diff-btn"             id="dMedium" onclick="setDiff('medium')">Medium</button>
+        <button class="diff-btn"             id="dHard"   onclick="setDiff('hard')">Hard</button>
+        <button class="diff-btn"             id="dExpert" onclick="setDiff('expert')">Expert</button>
+      </div>
+    </div>
+
+    <div class="flag-section">
+
+      <div class="flag-wrap" id="flagWrap">
+        <img class="flag-img" id="flagImg" src="" alt="Flag">
+        <div class="grid-overlay" id="gridOverlay"></div>
+        <div class="answer-overlay" id="answerOverlay"></div>
+      </div>
+
+      <div class="progress-row">
+        <div class="progress-track"><div class="progress-fill" id="progFill" style="width:0%"></div></div>
+        <span class="progress-label" id="progLabel">0 / 24</span>
+      </div>
+
+      <div class="points-meter">
+        <div>
+          <div class="pts-meter-label">Points this round</div>
+          <div class="pts-meter-val positive" id="ptsMeter">10</div>
+        </div>
+        <div class="pts-meter-sub" id="ptsMeterSub">No tiles revealed yet</div>
+      </div>
+
+      <div class="reveal-btns">
+        <button class="btn" id="btnR1" onclick="revealTiles(1)">
+          <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+          Reveal 1 tile
+        </button>
+        <button class="btn" id="btnRA" onclick="revealAll()">
+          <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+          Reveal all tiles
+        </button>
+        <button class="btn btn-answer" id="btnAns" onclick="showAnswer()">
+          <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+          Give up (lose full difficulty points)
+        </button>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="guess-row">
+        <div class="guess-wrap">
+          <input class="guess-input" id="guessInput" type="text"
+            placeholder="Type a country name and press Enter…"
+            oninput="onType()" onkeydown="if(event.key==='Enter')submitGuess()">
+          <div class="autocomplete" id="autocomplete"></div>
+        </div>
+        <button class="btn-guess" id="btnGuess" onclick="submitGuess()">Guess</button>
+      </div>
+
+      <div class="feedback" id="feedback"></div>
+
+      <button class="btn-next" id="btnNext" onclick="nextTurn()">
+        Next turn
+        <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+      </button>
+
+    </div>
+  </div>
+
+  <!-- Scoreboard -->
+  <div class="scoreboard-card">
+    <div class="sb-header">
+      <div class="sb-title">Scoreboard</div>
+      <button class="btn-finish" onclick="openFinishModal()">Finish Game</button>
+    </div>
+    <div class="sb-teams" id="sbTeams"></div>
+  </div>
+
+</div>
+
+<div class="modal-backdrop" id="finishModal">
+  <div class="modal">
+    <div class="modal-title">🏆 Game Over!</div>
+    <div class="modal-sub" id="modalSub"></div>
+    <div class="winner-banner" id="winnerBanner">
+      <div class="winner-label">Winner</div>
+      <div class="winner-name" id="winnerName"></div>
+      <div class="winner-score" id="winnerScore"></div>
+    </div>
+    <div class="modal-leaderboard" id="modalLeaderboard"></div>
+    <button class="btn-play-again" onclick="playAgain()">Play Again</button>
+  </div>
+</div>
+
+</body>
+</html>
