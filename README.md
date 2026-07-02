@@ -50,3 +50,11 @@ This is a static front-end project. Open [index.html](index.html) in a browser, 
 - Flag difficulty is assigned from the country mapping in [src/mapping.js](src/mapping.js).
 - The autocomplete list searches country names as you type.
 - The current game state is kept entirely in the browser.
+
+### Special Thanks
+
+Thanks to all contributors who have helped improve this project.
+
+Special thanks to:
+
+* [hampusborgos/country-flags](https://github.com/hampusborgos/country-flags) for providing the country flag assets.
