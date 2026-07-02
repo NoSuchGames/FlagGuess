@@ -1,6 +1,6 @@
 # FlagGuess
 
-[![GitHub Pages](https://img.shields.io/badge/live%20demo-GitHub%20Pages-2f855a?logo=githubpages&logoColor=white)](https://nosuchgames.github.io/FlagGuess/)
+[![GitHub Pages](https://img.shields.io/badge/Deployment-GitHub%20Pages-2f855a?logo=github)](https://nosuchgames.github.io/FlagGuess/)
 [![Source](https://img.shields.io/badge/source-GitHub-181717?logo=github&logoColor=white)](https://github.com/NoSuchGames/FlagGuess)
 [![License](https://img.shields.io/badge/license-GPL--3.0-111827?logo=gnu&logoColor=white)](LICENSE)
 
@@ -50,5 +50,3 @@ This is a static front-end project. Open [index.html](index.html) in a browser, 
 - Flag difficulty is assigned from the country mapping in [src/mapping.js](src/mapping.js).
 - The autocomplete list searches country names as you type.
 - The current game state is kept entirely in the browser.
-
-### 
